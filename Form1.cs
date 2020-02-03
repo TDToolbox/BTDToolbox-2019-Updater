@@ -37,6 +37,7 @@ namespace BTDToolbox_Updater
         private void Form1_Shown(object sender, EventArgs e)
         {
             printToConsole("Program Initialized...");
+            printToConsole("Welcome to BTD Toolbox 2019 auto-updater");
             printToConsole("Getting download link for latest version...");
             string versionText = client.DownloadString("https://raw.githubusercontent.com/TDToolbox/BTDToolbox-2019_LiveFIles/master/Version");
             string[] split = versionText.Split('\n');
@@ -73,7 +74,7 @@ namespace BTDToolbox_Updater
         private void BeginUpdate()
         {
             printToConsole("Beginning update...");
-            printToConsole("The update will delete the old toolbox files...\n\nDo you want to delete all of the projects as well?");
+            printToConsole("The update will delete the old toolbox files...\n>> Do you want to delete all of the projects as well?");
             DialogResult result = MessageBox.Show("The update will delete the old toolbox files...\n\nDo you want to delete all of the projects as well?", "Delete project files?", MessageBoxButtons.YesNo);
             if (result == DialogResult.Yes)
                 DeleteDirectory(Environment.CurrentDirectory, true);

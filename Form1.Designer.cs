@@ -37,9 +37,9 @@
             // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(27, 186);
+            this.progressBar1.Location = new System.Drawing.Point(27, 198);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(527, 37);
+            this.progressBar1.Size = new System.Drawing.Size(527, 25);
             this.progressBar1.TabIndex = 1;
             // 
             // Console
@@ -51,7 +51,7 @@
             this.Console.Location = new System.Drawing.Point(27, 98);
             this.Console.Name = "Console";
             this.Console.ReadOnly = true;
-            this.Console.Size = new System.Drawing.Size(527, 82);
+            this.Console.Size = new System.Drawing.Size(527, 94);
             this.Console.TabIndex = 2;
             this.Console.Text = "";
             // 
@@ -88,7 +88,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Form1";
+            this.Text = "BTD Toolbox Updater";
             this.Shown += new System.EventHandler(this.Form1_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
