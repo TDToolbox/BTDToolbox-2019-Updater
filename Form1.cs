@@ -30,7 +30,7 @@ namespace BTDToolbox_Updater
 
         int totalFiles;
         int filesTransfered;
-        bool exitLoop = false;
+        bool exit = false;
 
         public Form1()
         {
@@ -50,7 +50,7 @@ namespace BTDToolbox_Updater
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             CheckForExit();
-            exitLoop = true;
+            exit = true;
         }
         
         
@@ -122,7 +122,7 @@ namespace BTDToolbox_Updater
         }
         private void CheckForExit()
         {
-            if(exitLoop)
+            if(exit)
             {
                 if(File.Exists(Environment.CurrentDirectory + "\\BTDToolbox_Updater.zip"))
                     File.Delete(Environment.CurrentDirectory + "\\BTDToolbox_Updater.zip");
@@ -156,7 +156,7 @@ namespace BTDToolbox_Updater
                 {
                     for (int i = 0; i <= 100; i++)
                     {
-                        if (!exitLoop)
+                        if (!exit)
                         {
                             Thread.Sleep(100);
                             try
@@ -188,7 +188,7 @@ namespace BTDToolbox_Updater
                 printToConsole("ERROR! The program was unable to determine the latest version of BTD Toolbox. You can continue to use toolbox like normal, or try reopening the program to check again...");
                 for (int i = 0; i <= 120; i++)
                 {
-                    if (!exitLoop)
+                    if (!exit)
                     {
                         Thread.Sleep(100);
                     }
@@ -240,12 +240,12 @@ namespace BTDToolbox_Updater
             DialogResult result = MessageBox.Show("The update will delete the old toolbox files...\n\nDo you want to delete all of the projects as well?", "Delete project files?", MessageBoxButtons.YesNo);
             if (result == DialogResult.Yes)
             {
-                if (!exitLoop)
+                if (!exit)
                     DeleteDirectory(Environment.CurrentDirectory, true);
             }
             else
             {
-                if (!exitLoop)
+                if (!exit)
                     DeleteDirectory(Environment.CurrentDirectory, false);
             }
             CheckForExit();
@@ -283,8 +283,10 @@ namespace BTDToolbox_Updater
             printToConsole("Update files successfully extracted!!!\n>> Deleting installation files...");
             File.Delete(zipPath);
             printToConsole("Installation files deleted. Restarting Toolbox...");
+            
             Process.Start(Environment.CurrentDirectory + "\\BTDToolbox.exe");
-            Application.Exit();
+            exit = true;
+            CheckForExit();
         }
         private void ZipExtractProgress(object sender, ExtractProgressEventArgs e)
         {
