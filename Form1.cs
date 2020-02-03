@@ -49,6 +49,7 @@ namespace BTDToolbox_Updater
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            CheckForExit();
             exitLoop = true;
         }
         
@@ -117,6 +118,17 @@ namespace BTDToolbox_Updater
             else
             {
                 printToConsole("Directory not found. Unable to delete directory at:\r\n" + path);
+            }
+        }
+        private void CheckForExit()
+        {
+            if(exitLoop)
+            {
+                if(File.Exists(Environment.CurrentDirectory + "\\BTDToolbox_Updater.zip"))
+                    File.Delete(Environment.CurrentDirectory + "\\BTDToolbox_Updater.zip");
+                if (File.Exists(Environment.CurrentDirectory + "\\Update"))
+                    File.Delete(Environment.CurrentDirectory + "\\Update");
+                Environment.Exit(0);
             }
         }
 
@@ -196,6 +208,7 @@ namespace BTDToolbox_Updater
             toolboxRelease = split[0].Replace("toolbox2019: ", "");
             printToConsole("Download link aquired!");
 
+            CheckForExit();
             printToConsole("Checking if Toolbox is running..");
             if (isToolboxRunning() == false)
             {
@@ -226,10 +239,16 @@ namespace BTDToolbox_Updater
             printToConsole("The update will delete the old toolbox files...\n>> Do you want to delete all of the projects as well?");
             DialogResult result = MessageBox.Show("The update will delete the old toolbox files...\n\nDo you want to delete all of the projects as well?", "Delete project files?", MessageBoxButtons.YesNo);
             if (result == DialogResult.Yes)
-                DeleteDirectory(Environment.CurrentDirectory, true);
+            {
+                if (!exitLoop)
+                    DeleteDirectory(Environment.CurrentDirectory, true);
+            }
             else
-                DeleteDirectory(Environment.CurrentDirectory, false);
-
+            {
+                if (!exitLoop)
+                    DeleteDirectory(Environment.CurrentDirectory, false);
+            }
+            CheckForExit();
             DownloadUpdate();
         }
         private void DownloadUpdate()
@@ -239,6 +258,7 @@ namespace BTDToolbox_Updater
             client.DownloadFile(toolboxRelease, "Update"); //, Environment.CurrentDirectory);//
             printToConsole("Update successfully downloaded!");
             File.Move("Update", "BTDToolbox.zip");
+            CheckForExit();
             extract();
         }
 
