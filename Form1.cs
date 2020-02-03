@@ -108,7 +108,7 @@ namespace BTDToolbox_Updater
                 e.Extract(extractedFilePath, ExtractExistingFileAction.DoNotOverwrite);
             }
             archive.Dispose();
-            printToConsole("Update files successfully extracted!!!\nDeleting installation files...");
+            printToConsole("Update files successfully extracted!!!\n>> Deleting installation files...");
             File.Delete(zipPath);
             printToConsole("Installation files deleted. Restarting Toolbox...");
             Process.Start(Environment.CurrentDirectory + "\\BTDToolbox.exe");
@@ -157,12 +157,12 @@ namespace BTDToolbox_Updater
                 {
                     if ((deleteProjs == true))
                     {
-                        if (!file.ToString().Contains("BTDToolbox_Updater") && (!file.ToString().Contains(".dll")) && (!file.ToString().Contains(".json")))
+                        if (!file.ToString().Contains("BTDToolbox_Updater") && (!file.ToString().Contains("Backups")) && (!file.ToString().Contains(".dll")) && (!file.ToString().Contains(".json")))
                             file.Delete();
                     }
                     else
                     {
-                        if (!file.ToString().Contains("BTDToolbox_Updater") && (!file.ToString().Contains("proj")) && (!file.ToString().Contains(".dll")) && (!file.ToString().Contains(".json")))
+                        if (!file.ToString().Contains("BTDToolbox_Updater") && (!file.ToString().Contains("Backups")) && (!file.ToString().Contains("proj")) && (!file.ToString().Contains(".dll")) && (!file.ToString().Contains(".json")))
                             file.Delete();
                     }
                     
@@ -173,12 +173,12 @@ namespace BTDToolbox_Updater
                     
                     if ((deleteProjs == true))
                     {
-                        if (dir.ToString() != Environment.CurrentDirectory)
+                        if ((dir.ToString() != Environment.CurrentDirectory) && (!dir.ToString().Contains("Backups")))
                             dir.Delete(true);
                     }
                     else
                     {
-                        if ((dir.ToString() != Environment.CurrentDirectory) && (!dir.ToString().Contains("proj")))
+                        if ((dir.ToString() != Environment.CurrentDirectory) && (!dir.ToString().Contains("proj") && (!dir.ToString().Contains("Backups"))))
                             dir.Delete(true);
                     }
                 }
