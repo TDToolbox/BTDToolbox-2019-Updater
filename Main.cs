@@ -17,22 +17,63 @@ using System.Windows.Forms;
 
 namespace BTDToolbox_Updater
 {
-    public partial class Form1 : Form
+    public partial class Main : Form
     {
+        /// <summary>
+        /// This project is used to check text files on github for updates, and if there is an update, it will download 
+        /// and install it. 
+        /// 
+        /// You will need to configure the "For easy reuse" variables
+        /// 
+        /// For the program to work correctly, you need to set the "url" variable to the url of the RAW text file
+        /// on github, which you can view by going to your text file on github, then pressing the "RAW" button.
+        /// The program will then attempt to read that text file, and store its result in the "downloadedString" variable.
+        /// Some configuration will likely be necessary, as it needs to remove everything in "downloadedString" until the
+        /// only thing left is the URL of the most updated version of your project. This link needs to be the url of the
+        /// actual file itself, not a main webpage or release page, but the actual download link for it. Some configuration
+        /// may also be necessary with the console messages, as some of them are specifically for this project.
+        /// 
+        /// 
+        /// In short, this project will read a text file off of github and process it down to a url, then download the file
+        /// located at that url, extract it, delete all files (except for the exe) related to this updater, then launch the
+        /// updated program.
+        /// 
+        /// </summary>
 
+        
+
+        //================================================================================
+        //For easy reuse of project, change these variables
+        string filename = "BTD Toolbox";                     //This will be used in all of the console messages
+        string program_ProcessName = "BTDToolbox";           //Used to check if the program is already running. Must set this
+        string exeName = "BTDToolbox.exe";                   //Used to restart program after update. Do not put slashes in front of it, just name
+        string this_exeName = "BTDToolbox_Updater";      //The name of the exe that is this tool. Used to prevent deleting the Updater.exe
+        string updateZip_Name = "BTDToolbox_Updater.zip";    //The name of the zip file that is created from the downloaded update
+        string url = "https://raw.githubusercontent.com/TDToolbox/BTDToolbox-2019_LiveFIles/master/Version";    //URL of github config file
+        string[] ignoreFiles = new string[] { "BTDToolbox_Updater", "Backups", "DotNetZip", ".json" };  //list of files to ignore during deletion, based on the full path name
+        string[] deleteFiles = new string[] { "BTDToolbox_Updater.zip", "Update" };  //list of files to delete AFTER the update has finished. This is case specific
+        //================================================================================
+
+
+        //project varibales
         Thread bgThread;
         WebClient client;
 
-        string toolboxRelease;
-        public string lastMessage;
+        //string variables
+        string releaseVersion;
         string downloadedString = "";
-        string url = "https://raw.githubusercontent.com/TDToolbox/BTDToolbox-2019_LiveFIles/master/Version";
 
+        //extraction variables
         int totalFiles;
         int filesTransfered;
-        bool exit = false;
 
-        public Form1()
+        //other variables
+        string lastMessage;
+        bool exit = false;
+        bool deleteProjects = false;
+
+
+        public Main()
         {
             InitializeComponent();            
             client = new WebClient();
@@ -42,10 +83,11 @@ namespace BTDToolbox_Updater
         private void Form1_Shown(object sender, EventArgs e)
         {
             printToConsole("Program Initialized...");
-            printToConsole("Welcome to BTD Toolbox 2019 auto-updater");
+            printToConsole("Welcome to " + filename + " auto-updater");
             printToConsole("Getting download link for latest version...");
-
-            CheckURL();           
+            Thread bg = new Thread(load);
+            bg.Start();
+                     
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -55,6 +97,11 @@ namespace BTDToolbox_Updater
         
         
         //Core functions
+        private void load() //this pauses the updater for 1.5 seconds so user can see console
+        {
+            Thread.Sleep(1500);
+            CheckURL();  
+        }
         private void printToConsole(string message)
         {
             if (message != lastMessage)
@@ -72,44 +119,52 @@ namespace BTDToolbox_Updater
         }
         private bool isToolboxRunning()
         {
-            if (Process.GetProcessesByName("BTDToolbox").Length > 0)
+            if (Process.GetProcessesByName(program_ProcessName).Length > 0)
                 return true;
             else
                 return false;
         }
-        private void DeleteDirectory(string path, bool deleteProjs)
+        private void DeleteDirectory(string path)
         {
             if (Directory.Exists(path))
             {
                 printToConsole("Deleting directory..");
                 var directory = new DirectoryInfo(path) { Attributes = FileAttributes.Normal };
 
+                foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
+                {
+                    info.Attributes = FileAttributes.Normal;
+                }
+
                 foreach (FileInfo file in directory.GetFiles())
                 {
-                    if ((deleteProjs == true))
+                    bool skip = false;
+                    foreach (string ignore in ignoreFiles)
                     {
-                        if (!file.ToString().Contains("BTDToolbox_Updater") && (!file.ToString().Contains("Backups")) && (!file.ToString().Contains(".dll")) && (!file.ToString().Contains(".json")))
+                        if (file.ToString().Contains(ignore))
+                        {
+                            skip = true;
+                        }
+                    }
+                    if (skip == false)
+                    {
+                        if (file.Exists)
                             file.Delete();
                     }
-                    else
-                    {
-                        if (!file.ToString().Contains("BTDToolbox_Updater") && (!file.ToString().Contains("Backups")) && (!file.ToString().Contains("proj")) && (!file.ToString().Contains(".dll")) && (!file.ToString().Contains(".json")))
-                            file.Delete();
-                    }
-                    
-
                 }
                 foreach (DirectoryInfo dir in directory.GetDirectories())
                 {
-                    
-                    if ((deleteProjs == true))
+                    bool skip = false;
+                    foreach (string ignore in ignoreFiles)
                     {
-                        if ((dir.ToString() != Environment.CurrentDirectory) && (!dir.ToString().Contains("Backups")))
-                            dir.Delete(true);
+                        if (dir.FullName.ToString().Contains(ignore))
+                        {
+                            skip = true;
+                        }
                     }
-                    else
+                    if (skip == false)
                     {
-                        if ((dir.ToString() != Environment.CurrentDirectory) && (!dir.ToString().Contains("proj") && (!dir.ToString().Contains("Backups"))))
+                        if (dir.Exists)
                             dir.Delete(true);
                     }
                 }
@@ -117,17 +172,18 @@ namespace BTDToolbox_Updater
             }
             else
             {
-                printToConsole("Directory not found. Unable to delete directory at:\r\n" + path);
+                printToConsole("Directory not found. Unable to delete directory at: " + path);
             }
         }
         private void CheckForExit()
         {
             if(exit)
             {
-                if(File.Exists(Environment.CurrentDirectory + "\\BTDToolbox_Updater.zip"))
-                    File.Delete(Environment.CurrentDirectory + "\\BTDToolbox_Updater.zip");
-                if (File.Exists(Environment.CurrentDirectory + "\\Update"))
-                    File.Delete(Environment.CurrentDirectory + "\\Update");
+                foreach (string delete in deleteFiles)
+                {
+                    if (File.Exists(Environment.CurrentDirectory + "\\" + delete))
+                        File.Delete(Environment.CurrentDirectory + "\\" + delete);
+                }
                 Environment.Exit(0);
             }
         }
@@ -142,11 +198,9 @@ namespace BTDToolbox_Updater
         private void GetURL(string url)
         {
             bool success = false;
-            
             try
             {
                 downloadedString = client.DownloadString(url);
-                //MessageBox.Show(downloadedString);
                 success = true;
             }
             catch(Exception)
@@ -185,7 +239,7 @@ namespace BTDToolbox_Updater
             }
             else
             {
-                printToConsole("ERROR! The program was unable to determine the latest version of BTD Toolbox. You can continue to use toolbox like normal, or try reopening the program to check again...");
+                printToConsole("ERROR! The program was unable to determine the latest version of " + filename + ". You can continue to use it like normal, or try reopening the program to check again...");
                 for (int i = 0; i <= 120; i++)
                 {
                     if (!exit)
@@ -205,25 +259,25 @@ namespace BTDToolbox_Updater
         private void start()
         {
             string[] split = downloadedString.Split('\n');
-            toolboxRelease = split[0].Replace("toolbox2019: ", "");
+            releaseVersion = split[0].Replace("toolbox2019: ", "");
             printToConsole("Download link aquired!");
 
             CheckForExit();
-            printToConsole("Checking if Toolbox is running..");
+            printToConsole("Checking if " + filename + " is running..");
             if (isToolboxRunning() == false)
             {
-                printToConsole("Toolbox is not running...");
+                printToConsole(filename + " is not running...");
                 BeginUpdate();
             }
             else
             {
                 try
                 {
-                    foreach (Process proc in Process.GetProcessesByName("BTDToolbox"))
+                    foreach (Process proc in Process.GetProcessesByName(program_ProcessName))
                     {
-                        printToConsole("Toolbox is running, terminating toolbox...");
+                        printToConsole(filename + "  is running, terminating " + filename + "...");
                         proc.Kill();
-                        printToConsole("Toolbox terminated...");
+                        printToConsole(filename + "  terminated...");
                     }
                     BeginUpdate();
                 }
@@ -236,28 +290,27 @@ namespace BTDToolbox_Updater
         private void BeginUpdate()
         {
             printToConsole("Beginning update...");
-            printToConsole("The update will delete the old toolbox files...\n>> Do you want to delete all of the projects as well?");
-            DialogResult result = MessageBox.Show("The update will delete the old toolbox files...\n\nDo you want to delete all of the projects as well?", "Delete project files?", MessageBoxButtons.YesNo);
-            if (result == DialogResult.Yes)
+            printToConsole("This tool will replace all of the old " + filename + " files...\n\n>> Do you want it to delete all of the projects as well ?");
+            DialogResult result = MessageBox.Show("This tool will replace all of the old " + filename + " files... Do you want it to delete all of the projects as well?", "Delete project files?", MessageBoxButtons.YesNo);
+            if (result == DialogResult.No)
             {
-                if (!exit)
-                    DeleteDirectory(Environment.CurrentDirectory, true);
+                Array.Resize(ref ignoreFiles, ignoreFiles.Length + 1);
+                ignoreFiles[ignoreFiles.Length-1] = "proj";
             }
-            else
-            {
-                if (!exit)
-                    DeleteDirectory(Environment.CurrentDirectory, false);
-            }
-            CheckForExit();
+            DeleteDirectory(Environment.CurrentDirectory);
             DownloadUpdate();
         }
         private void DownloadUpdate()
         {
             printToConsole("Downloading update...");
 
-            client.DownloadFile(toolboxRelease, "Update"); //, Environment.CurrentDirectory);//
+            client.DownloadFile(releaseVersion, "Update"); //, Environment.CurrentDirectory);//
             printToConsole("Update successfully downloaded!");
-            File.Move("Update", "BTDToolbox.zip");
+            if (File.Exists(updateZip_Name))
+            {
+                File.Delete(updateZip_Name);
+            }
+            File.Move("Update", updateZip_Name);
             CheckForExit();
             extract();
         }
@@ -267,7 +320,7 @@ namespace BTDToolbox_Updater
         private void extract()
         {
             printToConsole("Extracting update files....");
-            string zipPath = Environment.CurrentDirectory + "\\BTDToolbox.zip";
+            string zipPath = Environment.CurrentDirectory + "\\"+ updateZip_Name;
             string extractedFilePath = Environment.CurrentDirectory;
             ZipFile archive = new ZipFile(zipPath);
 
@@ -282,9 +335,9 @@ namespace BTDToolbox_Updater
             archive.Dispose();
             printToConsole("Update files successfully extracted!!!\n>> Deleting installation files...");
             File.Delete(zipPath);
-            printToConsole("Installation files deleted. Restarting Toolbox...");
+            printToConsole("Installation files deleted. Restarting" + filename + "...");
             
-            Process.Start(Environment.CurrentDirectory + "\\BTDToolbox.exe");
+            Process.Start(Environment.CurrentDirectory + "\\"+ exeName);
             exit = true;
             CheckForExit();
         }
