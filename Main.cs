@@ -88,6 +88,7 @@ namespace BTDToolbox_Updater
             printToConsole("Reading launch parameters...");
             foreach (string arg in Environment.GetCommandLineArgs())
             {
+                arg.Replace("$$", " ");
                 if (arg.Contains("-fileName:"))
                 {
                     filename = arg.Replace("-fileName:", "");
