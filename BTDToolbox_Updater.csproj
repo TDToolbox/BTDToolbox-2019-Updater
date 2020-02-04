@@ -88,5 +88,8 @@
   <ItemGroup>
     <None Include="Resources\toolboxUpdater img 1_bg.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\toolboxUpdater img 2_bg.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

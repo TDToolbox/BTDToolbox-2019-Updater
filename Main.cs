@@ -40,18 +40,19 @@ namespace BTDToolbox_Updater
         /// 
         /// </summary>
 
-        
+
 
         //================================================================================
         //For easy reuse of project, change these variables
-        string filename = "BTD Toolbox";                     //This will be used in all of the console messages
-        string program_ProcessName = "BTDToolbox";           //Used to check if the program is already running. Must set this
-        string exeName = "BTDToolbox.exe";                   //Used to restart program after update. Do not put slashes in front of it, just name
-        string this_exeName = "BTDToolbox_Updater";      //The name of the exe that is this tool. Used to prevent deleting the Updater.exe
-        string updateZip_Name = "BTDToolbox_Updater.zip";    //The name of the zip file that is created from the downloaded update
-        string url = "https://raw.githubusercontent.com/TDToolbox/BTDToolbox-2019_LiveFIles/master/Version";    //URL of github config file
-        string[] ignoreFiles = new string[] { "BTDToolbox_Updater", "Backups", "DotNetZip", ".json" };  //list of files to ignore during deletion, based on the full path name
-        string[] deleteFiles = new string[] { "BTDToolbox_Updater.zip", "Update" };  //list of files to delete AFTER the update has finished. This is case specific
+        string filename;// = "BTD Toolbox";                                             //This will be used in all of the console messages
+        string program_ProcessName;// = "BTDToolbox";                                   //Used to check if the program is already running. Must set this
+        string exeName;// = "BTDToolbox.exe";                                           //Used to restart program after update. Do not put slashes in front of it, just name
+        string updateZip_Name = "";// = "BTDToolbox_Updater.zip";                       //The name of the zip file that is created from the downloaded update
+        string url = "";// https://raw.githubusercontent.com/TDToolbox/BTDToolbox-2019_LiveFIles/master/Version";    //URL of github config file
+        string[] ignoreFiles = new string[] { };//{ "BTDToolbox_Updater", "Backups", "DotNetZip", ".json" };  //list of files to ignore during deletion, based on the full path name
+        string[] deleteFiles = new string[] { };// { "BTDToolbox_Updater.zip", "Update" };  //list of files to delete AFTER the update has finished. This is case specific
+        string[] replaceText = new string[] { };                                       //A list of all of the words and characters that you want to delete from the downloaded url. EX: BTDToolbox: www.toolbox.com.  In this example we want to delete BTDToolbox:   from the link. Btw that website isnt ours so go at your own risk
+        string lineNumber; //= " ";                                                             // The line number that the url is on, starting from 0. Look at the commented "url" above. It is refering to index 0
         //================================================================================
 
 
@@ -82,12 +83,56 @@ namespace BTDToolbox_Updater
         //Events
         private void Form1_Shown(object sender, EventArgs e)
         {
+            bool error = false;
             printToConsole("Program Initialized...");
-            printToConsole("Welcome to " + filename + " auto-updater");
-            printToConsole("Getting download link for latest version...");
-            Thread bg = new Thread(load);
-            bg.Start();
-                     
+            printToConsole("Reading launch parameters...");
+            foreach (string arg in Environment.GetCommandLineArgs())
+            {
+                if (arg.Contains("-fileName:"))
+                {
+                    filename = arg.Replace("-fileName:", "");
+                }
+                else if (arg.Contains("-processName:"))
+                {
+                    program_ProcessName = arg.Replace("-processName:", "");
+                }
+                else if (arg.Contains("-exeName:"))
+                {
+                    exeName = arg.Replace("-exeName:", "");
+                }
+                else if (arg.Contains("-updateZip_Name:"))
+                {
+                    updateZip_Name = arg.Replace("-updateZip_Name:", "");
+                }
+                else if (arg.Contains("-ignoreFiles:"))
+                {
+                    ignoreFiles = CreateStringArray(arg, "-ignoreFiles:", ignoreFiles);
+                }
+                else if (arg.Contains("-deleteFiles:"))
+                {
+                    deleteFiles = CreateStringArray(arg, "-deleteFiles:", deleteFiles);
+                }
+                else if (arg.Contains("-replaceText:"))
+                {
+                    replaceText = CreateStringArray(arg, "-replaceText:", replaceText);
+                }
+                else if (arg.Contains("-url:"))
+                {
+                    url = arg.Replace("-url:", "");
+                }
+                else if (arg.Contains("-lineNumber:"))
+                {
+                    lineNumber = arg.Replace("-lineNumber:", "");
+                }
+            }
+            if (error != true)
+            {
+                printToConsole("Welcome to " + filename + " auto-updater");
+                printToConsole("Getting download link for latest version...");
+                Thread bg = new Thread(load);
+                bg.Start();
+            }
+                
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -101,6 +146,18 @@ namespace BTDToolbox_Updater
         {
             Thread.Sleep(1500);
             CheckURL();  
+        }
+        private string[] CreateStringArray(string inputArg, string argName, string[] stringArray)
+        {
+            Array.Resize(ref stringArray, 0);
+
+            string[] cleanArg = (inputArg.Replace(argName, "").Replace("{", "").Replace("}", "")).Split(',');
+            foreach (string s in cleanArg)
+            {
+                Array.Resize(ref stringArray, stringArray.Length + 1);
+                stringArray[stringArray.Length - 1] = s;
+            }
+            return stringArray;
         }
         private void printToConsole(string message)
         {
@@ -253,14 +310,23 @@ namespace BTDToolbox_Updater
                 }
             }
         }
+        private void CleanURL()
+        {
+            string[] split = downloadedString.Split('\n');
+            int lineNum = Int32.Parse(lineNumber);
 
+            foreach (string arg in replaceText)
+            {
+                releaseVersion = split[lineNum].Replace(arg, "");
+            }
+        }
 
         //Start update AFTER confirming the URL
         private void start()
         {
-            string[] split = downloadedString.Split('\n');
-            releaseVersion = split[0].Replace("toolbox2019: ", "");
-            printToConsole("Download link aquired!");
+            CleanURL();
+
+            printToConsole("Download link aquired!:" +  releaseVersion);
 
             CheckForExit();
             printToConsole("Checking if " + filename + " is running..");

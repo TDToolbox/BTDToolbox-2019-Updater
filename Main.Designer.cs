@@ -57,11 +57,11 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.BackgroundImage = global::BTDToolbox_Updater.Properties.Resources.toolboxUpdater_img_1_bg;
-            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.pictureBox1.Location = new System.Drawing.Point(136, 3);
+            this.pictureBox1.BackgroundImage = global::BTDToolbox_Updater.Properties.Resources.toolboxUpdater_img_2_bg;
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox1.Location = new System.Drawing.Point(62, -1);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(315, 53);
+            this.pictureBox1.Size = new System.Drawing.Size(465, 64);
             this.pictureBox1.TabIndex = 3;
             this.pictureBox1.TabStop = false;
             // 
@@ -75,7 +75,7 @@
             this.label1.TabIndex = 4;
             this.label1.Text = "Console:";
             // 
-            // Form1
+            // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -86,7 +86,7 @@
             this.Controls.Add(this.Console);
             this.Controls.Add(this.progressBar1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Name = "Form1";
+            this.Name = "Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "BTD Toolbox Updater";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);

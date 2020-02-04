@@ -121,4 +121,7 @@
   <data name="toolboxUpdater_img_1_bg" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\toolboxUpdater img 1_bg.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="toolboxUpdater_img_2_bg" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\toolboxUpdater img 2_bg.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

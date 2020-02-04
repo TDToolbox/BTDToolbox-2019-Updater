@@ -69,5 +69,15 @@ namespace BTDToolbox_Updater.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap toolboxUpdater_img_2_bg {
+            get {
+                object obj = ResourceManager.GetObject("toolboxUpdater_img_2_bg", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }
