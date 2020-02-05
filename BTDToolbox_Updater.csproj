@@ -50,6 +50,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\Extract.cs" />
+    <Compile Include="Classes\GeneralMethods.cs" />
+    <Compile Include="Classes\WebHandler.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -91,5 +94,6 @@
   <ItemGroup>
     <None Include="Resources\toolboxUpdater img 2_bg.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

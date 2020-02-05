@@ -98,10 +98,10 @@
         }
 
         #endregion
-        private System.Windows.Forms.ProgressBar progressBar1;
-        private System.Windows.Forms.RichTextBox Console;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label label1;
+        public System.Windows.Forms.RichTextBox Console;
+        public System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 

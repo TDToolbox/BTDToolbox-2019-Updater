@@ -1,4 +1,5 @@
-﻿using Ionic.Zip;
+﻿using BTDToolbox_Updater.Classes;
+using Ionic.Zip;
 using Ionic.Zlib;
 using System;
 using System.Collections.Generic;
@@ -7,13 +8,13 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-//using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static BTDToolbox_Updater.Classes.GeneralMethods;
 
 namespace BTDToolbox_Updater
 {
@@ -48,47 +49,140 @@ namespace BTDToolbox_Updater
         string program_ProcessName;// = "BTDToolbox";                                   //Used to check if the program is already running. Must set this
         string exeName;// = "BTDToolbox.exe";                                           //Used to restart program after update. Do not put slashes in front of it, just name
         string updateZip_Name = "";// = "BTDToolbox_Updater.zip";                       //The name of the zip file that is created from the downloaded update
-        string url = "";// https://raw.githubusercontent.com/TDToolbox/BTDToolbox-2019_LiveFIles/master/Version";    //URL of github config file
-        string[] ignoreFiles = new string[] { };//{ "BTDToolbox_Updater", "Backups", "DotNetZip", ".json" };  //list of files to ignore during deletion, based on the full path name
-        string[] deleteFiles = new string[] { };// { "BTDToolbox_Updater.zip", "Update" };  //list of files to delete AFTER the update has finished. This is case specific
-        string[] replaceText = new string[] { };                                       //A list of all of the words and characters that you want to delete from the downloaded url. EX: BTDToolbox: www.toolbox.com.  In this example we want to delete BTDToolbox:   from the link. Btw that website isnt ours so go at your own risk
-        string lineNumber; //= " ";                                                             // The line number that the url is on, starting from 0. Look at the commented "url" above. It is refering to index 0
+        //string url = "";// "https://raw.githubusercontent.com/TDToolbox/BTDToolbox-2019_LiveFIles/master/Version";    //URL of github config file
+        string param_url = "";//"https://raw.githubusercontent.com/TDToolbox/BTDToolbox-2019_LiveFIles/master/Updater_launch%20parameters";    //URL of github config file
+        string download_url = "";
+        string[] files_to_ignore = new string[] { };//{ "BTDToolbox_Updater", "Backups", "DotNetZip", ".json" };  //list of files to ignore during deletion, based on the full path name
+        string[] files_to_delete_on_exit = new string[] { };    // { "BTDToolbox_Updater.zip", "Update" };  //list of files to delete AFTER the update has finished. This is case specific
+        //string[] replaceText = new string[] { };                                       //A list of all of the words and characters that you want to delete from the downloaded url. EX: BTDToolbox: www.toolbox.com.  In this example we want to delete BTDToolbox:   from the link. Btw that website isnt ours so go at your own risk
+        string replaceText = "";                                                         //A list of all of the words and characters that you want to delete from the downloaded url. EX: BTDToolbox: www.toolbox.com.  In this example we want to delete BTDToolbox:   from the link. Btw that website isnt ours so go at your own risk
+        string[] askToDeleteFiles = new string[] {  };                                   //A list of all of the words and characters that you want the updater to ask about deleting
+        string[] askToDeleteFiles_Message = new string[] {  };                           //The message that will be asked if you add files to "askToDeleteFiles"
+        int paramNumber;                                                                 // The line number that the url is on, starting from 0. Look at the commented "url" above. It is refering to index 0
+        int lineNumber;                                                                  // The line number that the url is on, starting from 0. Look at the commented "url" above. It is refering to index 0
         //================================================================================
 
 
         //project varibales
-        Thread bgThread;
+
         WebClient client;
+        WebHandler web;
+        private static Main main;
 
-        //string variables
-        string releaseVersion;
-        string downloadedString = "";
-
-        //extraction variables
-        int totalFiles;
-        int filesTransfered;
-
-        //other variables
-        string lastMessage;
-        bool exit = false;
-        bool deleteProjects = false;
-
+        //refactoring variables
+        public static bool exit = false;
+        string unprocessedURL;
 
         public Main()
         {
             InitializeComponent();            
             client = new WebClient();
+            web = new WebHandler();
+            main = this;
         }
 
         //Events
         private void Form1_Shown(object sender, EventArgs e)
         {
-            bool error = false;
-            printToConsole("Program Initialized...");
-            printToConsole("Reading launch parameters...");
+            printToConsole("Program Initialized...", this);
+            this.Refresh();
+            Thread.Sleep(1500);
+            Get_Launch_Parameters();
+            if (GeneralMethods.isProcessRunning(program_ProcessName))
+                TerminateProcess(filename, program_ProcessName);
+
+            Start();
+        }
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            exit = true;
+            CheckForExit(files_to_delete_on_exit);           
+        }
+
+        //core functions
+        public static Main getInstance()
+        {
+            return main;
+        }
+
+        //operations
+        private void Start()
+        {
+            if (param_url == "" || param_url == null)
+            {
+                printToConsole("Vital launch parameters are missing! Missing initial git url.  Unable to continue", this);
+            }
+            else
+            {
+                printToConsole("Welcome to " + filename + " auto-updater", this);
+                if (askToDeleteFiles != null && askToDeleteFiles_Message != null)
+                {
+                    AskToDelete();
+                }
+                DeleteDirectory(Environment.CurrentDirectory, files_to_ignore);
+                DownloadFiles();
+            }
+        }
+        private void AskToDelete()  //if there are important files, ask if you want them deleted...
+        {
+            int askMessage_index = 0;
+            MessageBox.Show("This updater is build to delete all of the old files and replace them with new ones.");
+            foreach(string askFile in askToDeleteFiles)
+            {
+                DialogResult result = DialogResult = MessageBox.Show(askToDeleteFiles_Message[askMessage_index], "Delete?", MessageBoxButtons.YesNo);
+                if (result == DialogResult.No)
+                {
+                    Array.Resize(ref files_to_ignore, files_to_ignore.Length + 1);
+                    files_to_ignore[files_to_ignore.Length - 1] = askFile;                    
+                }
+                else
+                {
+                    Array.Resize(ref files_to_delete_on_exit, files_to_delete_on_exit.Length + 1);
+                    files_to_delete_on_exit[files_to_delete_on_exit.Length - 1] = askFile;
+                }
+                askMessage_index++;
+            }
+        }
+        private void Get_Launch_Parameters()    //Get url and git_param line number from Launch Parameters
+        {
+            printToConsole("Reading launch parameters...", this);
             foreach (string arg in Environment.GetCommandLineArgs())
             {
                 arg.Replace("$$", " ");
+
+                if (arg.Contains("-url:"))
+                {
+                    param_url = arg.Replace("-url:", "");
+                }
+                else if (arg.Contains("-lineNumber:"))
+                {
+                    paramNumber = Int32.Parse(arg.Replace("-lineNumber:", "")); //param number is the same as line number
+                }
+            }
+            if (param_url == "" || param_url == null)
+            {
+                printToConsole("Launch parameters are missing! Unable to continue", this);
+            }
+            else      //get git parameters
+            {
+                printToConsole("Launch parameters aquired", this);
+                string gitURL = web.WaitOn_URL(param_url, files_to_delete_on_exit);
+                string gitText = web.processGit_Text(gitURL, "btdtoolbox:", paramNumber);
+                Read_Git_Parameters(gitText);
+            }            
+        }
+        private void Read_Git_Parameters(string gitText)
+        {
+            string[] args = gitText.Split(' ');
+            foreach (string argx in args)
+            {
+                string arg;
+                arg = argx.Replace("$$", " ");
+
+                if (argx.EndsWith(","))
+                {
+                    arg = arg.Remove(arg.Length - 1);
+                }
                 if (arg.Contains("-fileName:"))
                 {
                     filename = arg.Replace("-fileName:", "");
@@ -107,321 +201,50 @@ namespace BTDToolbox_Updater
                 }
                 else if (arg.Contains("-ignoreFiles:"))
                 {
-                    ignoreFiles = CreateStringArray(arg, "-ignoreFiles:", ignoreFiles);
+                    files_to_ignore = GeneralMethods.CreateStringArray(arg, "-ignoreFiles:", files_to_ignore);
                 }
                 else if (arg.Contains("-deleteFiles:"))
                 {
-                    deleteFiles = CreateStringArray(arg, "-deleteFiles:", deleteFiles);
+                    files_to_delete_on_exit = GeneralMethods.CreateStringArray(arg, "-deleteFiles:", files_to_delete_on_exit);
                 }
                 else if (arg.Contains("-replaceText:"))
                 {
-                    replaceText = CreateStringArray(arg, "-replaceText:", replaceText);
+                    replaceText = arg.Replace("-replaceText:", "");
+                    //replaceText = GeneralMethods.CreateStringArray(arg, "-replaceText:", replaceText);
                 }
-                else if (arg.Contains("-url:"))
+                else if (arg.Contains("-askToDelete:"))
                 {
-                    url = arg.Replace("-url:", "");
+                    askToDeleteFiles = GeneralMethods.CreateStringArray(arg, "-askToDelete:", askToDeleteFiles);
+                }
+                else if (arg.Contains("-askToDeleteMessage:"))
+                {
+                    askToDeleteFiles_Message = GeneralMethods.CreateStringArray(arg, "-askToDeleteMessage:", askToDeleteFiles_Message);
                 }
                 else if (arg.Contains("-lineNumber:"))
                 {
-                    lineNumber = arg.Replace("-lineNumber:", "");
+                    lineNumber = Int32.Parse(arg.Replace("-lineNumber:", ""));
                 }
-            }
-            if (error != true)
-            {
-                printToConsole("Welcome to " + filename + " auto-updater");
-                printToConsole("Getting download link for latest version...");
-                Thread bg = new Thread(load);
-                bg.Start();
-            }
-                
-        }
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            CheckForExit();
-            exit = true;
-        }
-        
-        
-        //Core functions
-        private void load() //this pauses the updater for 1.5 seconds so user can see console
-        {
-            Thread.Sleep(1500);
-            CheckURL();  
-        }
-        private string[] CreateStringArray(string inputArg, string argName, string[] stringArray)
-        {
-            Array.Resize(ref stringArray, 0);
-
-            string[] cleanArg = (inputArg.Replace(argName, "").Replace("{", "").Replace("}", "")).Split(',');
-            foreach (string s in cleanArg)
-            {
-                Array.Resize(ref stringArray, stringArray.Length + 1);
-                stringArray[stringArray.Length - 1] = s;
-            }
-            return stringArray;
-        }
-        private void printToConsole(string message)
-        {
-            if (message != lastMessage)
-            {
-                try
+                else if (arg.Contains("-url:"))
                 {
-                    Invoke((MethodInvoker)delegate {
-                        Console.AppendText(">> " + message + "\r\n");
-                        lastMessage = message;
-                    });
-                }
-                catch
-                { }
-            }
-        }
-        private bool isToolboxRunning()
-        {
-            if (Process.GetProcessesByName(program_ProcessName).Length > 0)
-                return true;
-            else
-                return false;
-        }
-        private void DeleteDirectory(string path)
-        {
-            if (Directory.Exists(path))
-            {
-                printToConsole("Deleting directory..");
-                var directory = new DirectoryInfo(path) { Attributes = FileAttributes.Normal };
-
-                foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
-                {
-                    info.Attributes = FileAttributes.Normal;
-                }
-
-                foreach (FileInfo file in directory.GetFiles())
-                {
-                    bool skip = false;
-                    foreach (string ignore in ignoreFiles)
-                    {
-                        if (file.ToString().Contains(ignore))
-                        {
-                            skip = true;
-                        }
-                    }
-                    if (skip == false)
-                    {
-                        if (file.Exists)
-                            file.Delete();
-                    }
-                }
-                foreach (DirectoryInfo dir in directory.GetDirectories())
-                {
-                    bool skip = false;
-                    foreach (string ignore in ignoreFiles)
-                    {
-                        if (dir.FullName.ToString().Contains(ignore))
-                        {
-                            skip = true;
-                        }
-                    }
-                    if (skip == false)
-                    {
-                        if (dir.Exists)
-                            dir.Delete(true);
-                    }
-                }
-                printToConsole("Directory deleted.");
-            }
-            else
-            {
-                printToConsole("Directory not found. Unable to delete directory at: " + path);
-            }
-        }
-        private void CheckForExit()
-        {
-            if(exit)
-            {
-                foreach (string delete in deleteFiles)
-                {
-                    if (File.Exists(Environment.CurrentDirectory + "\\" + delete))
-                        File.Delete(Environment.CurrentDirectory + "\\" + delete);
-                }
-                Environment.Exit(0);
-            }
-        }
-
-
-        //Get the URL with some error handling
-        public void CheckURL()
-        {
-            Thread thread = new Thread(() => GetURL(url));
-            thread.Start();
-        }
-        private void GetURL(string url)
-        {
-            bool success = false;
-            try
-            {
-                downloadedString = client.DownloadString(url);
-                success = true;
-            }
-            catch(Exception)
-            {
-                printToConsole("There was an issue reading the version file. Trying again... This will take up to 10 seconds...");
-                if (success == false)
-                {
-                    for (int i = 0; i <= 100; i++)
-                    {
-                        if (!exit)
-                        {
-                            Thread.Sleep(100);
-                            try
-                            {
-                                downloadedString = client.DownloadString(url);
-                                if (downloadedString != null && downloadedString != "")
-                                {
-                                    success = true;
-                                    break;
-                                }
-                                
-                            }
-                            catch { }
-                        }
-                        else
-                        {
-                            Environment.Exit(0);
-                        }
-                    }
-                }
-            }
-
-            if (success == true)
-            {
-                start();
-            }
-            else
-            {
-                printToConsole("ERROR! The program was unable to determine the latest version of " + filename + ". You can continue to use it like normal, or try reopening the program to check again...");
-                for (int i = 0; i <= 120; i++)
-                {
-                    if (!exit)
-                    {
-                        Thread.Sleep(100);
-                    }
-                    else
-                    {
-                        Environment.Exit(0);
-                    }
+                    unprocessedURL = arg.Replace("-url:", "");
                 }
             }
         }
-        private void CleanURL()
+        private void DownloadFiles()
         {
-            string[] split = downloadedString.Split('\n');
-            int lineNum = Int32.Parse(lineNumber);
-
-            foreach (string arg in replaceText)
-            {
-                releaseVersion = split[lineNum].Replace(arg, "");
-            }
-        }
-
-        //Start update AFTER confirming the URL
-        private void start()
-        {
-            CleanURL();
-
-            printToConsole("Download link aquired!:" +  releaseVersion);
-
-            CheckForExit();
-            printToConsole("Checking if " + filename + " is running..");
-            if (isToolboxRunning() == false)
-            {
-                printToConsole(filename + " is not running...");
-                BeginUpdate();
-            }
-            else
-            {
-                try
-                {
-                    foreach (Process proc in Process.GetProcessesByName(program_ProcessName))
-                    {
-                        printToConsole(filename + "  is running, terminating " + filename + "...");
-                        proc.Kill();
-                        printToConsole(filename + "  terminated...");
-                    }
-                    BeginUpdate();
-                }
-                catch (Exception ex)
-                {
-                    printToConsole(ex.Message);
-                }
-            }
-        }
-        private void BeginUpdate()
-        {
-            printToConsole("Beginning update...");
-            printToConsole("This tool will replace all of the old " + filename + " files...\n\n>> Do you want it to delete all of the projects as well ?");
-            DialogResult result = MessageBox.Show("This tool will replace all of the old " + filename + " files... Do you want it to delete all of the projects as well?", "Delete project files?", MessageBoxButtons.YesNo);
-            if (result == DialogResult.No)
-            {
-                Array.Resize(ref ignoreFiles, ignoreFiles.Length + 1);
-                ignoreFiles[ignoreFiles.Length-1] = "proj";
-            }
-            DeleteDirectory(Environment.CurrentDirectory);
-            DownloadUpdate();
-        }
-        private void DownloadUpdate()
-        {
-            printToConsole("Downloading update...");
-
-            client.DownloadFile(releaseVersion, "Update"); //, Environment.CurrentDirectory);//
-            printToConsole("Update successfully downloaded!");
+            printToConsole("Getting download link for latest version...", this);
+            download_url = web.processGit_Text(web.WaitOn_URL(unprocessedURL, files_to_delete_on_exit), replaceText, lineNumber);
+            printToConsole("Downloading update...", this);
+            client.DownloadFile(download_url, "Update");
+            printToConsole("Update successfully downloaded!", this);
             if (File.Exists(updateZip_Name))
             {
                 File.Delete(updateZip_Name);
             }
             File.Move("Update", updateZip_Name);
-            CheckForExit();
-            extract();
-        }
 
-
-        //Extract
-        private void extract()
-        {
-            printToConsole("Extracting update files....");
-            string zipPath = Environment.CurrentDirectory + "\\"+ updateZip_Name;
-            string extractedFilePath = Environment.CurrentDirectory;
-            ZipFile archive = new ZipFile(zipPath);
-
-            totalFiles = archive.Count();
-            filesTransfered = 0;
-            archive.ExtractProgress += ZipExtractProgress;
-
-            foreach (ZipEntry e in archive)
-            {
-                e.Extract(extractedFilePath, ExtractExistingFileAction.DoNotOverwrite);
-            }
-            archive.Dispose();
-            printToConsole("Update files successfully extracted!!!\n>> Deleting installation files...");
-            File.Delete(zipPath);
-            printToConsole("Installation files deleted. Restarting" + filename + "...");
-            
-            Process.Start(Environment.CurrentDirectory + "\\"+ exeName);
-            exit = true;
-            CheckForExit();
-        }
-        private void ZipExtractProgress(object sender, ExtractProgressEventArgs e)
-        {
-
-            if (e.EventType != ZipProgressEventType.Extracting_BeforeExtractEntry)
-                return;
-            try
-            {
-                progressBar1.Invoke(new Action(() => progressBar1.Value = 100 * filesTransfered / totalFiles));
-            }
-            catch (Exception ex)
-            {
-                printToConsole(ex.Message);
-            }
-            filesTransfered++;
+            var extract = new Extract();
+            extract.extract(updateZip_Name, filename, exeName, files_to_delete_on_exit);
         }
     }
 }
