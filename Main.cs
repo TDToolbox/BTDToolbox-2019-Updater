@@ -45,7 +45,7 @@ namespace BTDToolbox_Updater
 
         //================================================================================
         //For easy reuse of project, change these variables
-        string filename;// = "BTD Toolbox";                                             //This will be used in all of the console messages
+        string filename = "BTD Toolbox";// = "BTD Toolbox";                                             //This will be used in all of the console messages
         string program_ProcessName;// = "BTDToolbox";                                   //Used to check if the program is already running. Must set this
         string exeName;// = "BTDToolbox.exe";                                           //Used to restart program after update. Do not put slashes in front of it, just name
         string updateZip_Name = "";// = "BTDToolbox_Updater.zip";                       //The name of the zip file that is created from the downloaded update
@@ -57,7 +57,7 @@ namespace BTDToolbox_Updater
         //string[] replaceText = new string[] { };                                       //A list of all of the words and characters that you want to delete from the downloaded url. EX: BTDToolbox: www.toolbox.com.  In this example we want to delete BTDToolbox:   from the link. Btw that website isnt ours so go at your own risk
         string replaceText = "";                                                         //A list of all of the words and characters that you want to delete from the downloaded url. EX: BTDToolbox: www.toolbox.com.  In this example we want to delete BTDToolbox:   from the link. Btw that website isnt ours so go at your own risk
         string[] askToDeleteFiles = new string[] {  };                                   //A list of all of the words and characters that you want the updater to ask about deleting
-        string[] askToDeleteFiles_Message = new string[] {  };                           //The message that will be asked if you add files to "askToDeleteFiles"
+        string[] askToDeleteFiles_ListBox_Text = new string[] {  };                           //The message that will be asked if you add files to "askToDeleteFiles"
         int paramNumber;                                                                 // The line number that the url is on, starting from 0. Look at the commented "url" above. It is refering to index 0
         int lineNumber;                                                                  // The line number that the url is on, starting from 0. Look at the commented "url" above. It is refering to index 0
         //================================================================================
@@ -72,7 +72,7 @@ namespace BTDToolbox_Updater
         //refactoring variables
         public static bool exit = false;
         string unprocessedURL;
-
+        public static string lastMessage;
         public Main()
         {
             InitializeComponent();            
@@ -85,13 +85,10 @@ namespace BTDToolbox_Updater
         private void Form1_Shown(object sender, EventArgs e)
         {
             printToConsole("Program Initialized...", this);
-            this.Refresh();
-            Thread.Sleep(1500);
             Get_Launch_Parameters();
             if (GeneralMethods.isProcessRunning(program_ProcessName))
                 TerminateProcess(filename, program_ProcessName);
-
-            Start();
+            PopulateOptionalFiles();
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -115,21 +112,25 @@ namespace BTDToolbox_Updater
             else
             {
                 printToConsole("Welcome to " + filename + " auto-updater", this);
-                if (askToDeleteFiles != null && askToDeleteFiles_Message != null)
-                {
-                    AskToDelete();
-                }
                 DeleteDirectory(Environment.CurrentDirectory, files_to_ignore);
                 DownloadFiles();
             }
         }
-        private void AskToDelete()  //if there are important files, ask if you want them deleted...
+        private void PopulateOptionalFiles()
+        {
+            AskFilesToDelete_Listbox.Items.Add(filename, CheckState.Checked);
+            foreach (string askDelete in askToDeleteFiles_ListBox_Text)
+            {
+                AskFilesToDelete_Listbox.Items.Add(askDelete, CheckState.Unchecked);
+            }
+        }
+        /*private void AskToDelete()  //if there are important files, ask if you want them deleted...
         {
             int askMessage_index = 0;
             MessageBox.Show("This updater is build to delete all of the old files and replace them with new ones.");
             foreach(string askFile in askToDeleteFiles)
             {
-                DialogResult result = DialogResult = MessageBox.Show(askToDeleteFiles_Message[askMessage_index], "Delete?", MessageBoxButtons.YesNo);
+                DialogResult result = DialogResult = MessageBox.Show(askToDeleteFiles_ListBox_Text[askMessage_index], "Delete?", MessageBoxButtons.YesNo);
                 if (result == DialogResult.No)
                 {
                     Array.Resize(ref files_to_ignore, files_to_ignore.Length + 1);
@@ -142,7 +143,7 @@ namespace BTDToolbox_Updater
                 }
                 askMessage_index++;
             }
-        }
+        }*/
         private void Get_Launch_Parameters()    //Get url and git_param line number from Launch Parameters
         {
             printToConsole("Reading launch parameters...", this);
@@ -216,9 +217,9 @@ namespace BTDToolbox_Updater
                 {
                     askToDeleteFiles = GeneralMethods.CreateStringArray(arg, "-askToDelete:", askToDeleteFiles);
                 }
-                else if (arg.Contains("-askToDeleteMessage:"))
+                else if (arg.Contains("-askToDeleteFiles_ListBox_Text:"))
                 {
-                    askToDeleteFiles_Message = GeneralMethods.CreateStringArray(arg, "-askToDeleteMessage:", askToDeleteFiles_Message);
+                    askToDeleteFiles_ListBox_Text = GeneralMethods.CreateStringArray(arg, "-askToDeleteFiles_ListBox_Text:", askToDeleteFiles_ListBox_Text);
                 }
                 else if (arg.Contains("-lineNumber:"))
                 {
@@ -245,6 +246,60 @@ namespace BTDToolbox_Updater
 
             var extract = new Extract();
             extract.extract(updateZip_Name, filename, exeName, files_to_delete_on_exit);
+        }
+
+        private void Update_Button_Click(object sender, EventArgs e)
+        {
+            if (AskFilesToDelete_Listbox.GetItemCheckState(0) != CheckState.Checked)
+            {
+                MessageBox.Show("You need to have the " + filename + " checkbox checked to continue");
+            }
+            else
+            {
+                //var items = AskFilesToDelete_Listbox.CheckedItems;
+                string[] items = new string[] { };
+                int count = askToDeleteFiles_ListBox_Text.Length + 1;
+
+                for (int x = 0; x < count; x++)
+                {
+                    if (AskFilesToDelete_Listbox.GetItemCheckState(x) == CheckState.Unchecked)
+                    {
+                        Array.Resize(ref items, items.Length + 1);
+                        items[items.Length - 1] = askToDeleteFiles_ListBox_Text[x - 1];
+                    }
+                }
+
+                foreach (object item in items)
+                {
+
+                    string checkedItem = item.ToString();
+                    int i = 0;
+
+
+                    foreach (string askDelete in askToDeleteFiles_ListBox_Text)
+                    {
+                        if (askDelete == checkedItem)
+                        {
+                            object dontDelete = askToDeleteFiles.GetValue(i);
+                            bool duplicate = false;
+
+                            foreach (string ignore in files_to_ignore)
+                            {
+                                if (ignore == dontDelete.ToString())
+                                    duplicate = true;
+                            }
+                            if (!duplicate)
+                            {
+                                Array.Resize(ref files_to_ignore, files_to_ignore.Length + 1);
+                                files_to_ignore[files_to_ignore.Length - 1] = dontDelete.ToString();
+                            }
+                            duplicate = false;
+                        }
+                        i++;
+                    }
+                }
+                Start();
+            }
         }
     }
 }

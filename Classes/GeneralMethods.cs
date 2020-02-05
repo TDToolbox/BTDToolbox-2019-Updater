@@ -113,10 +113,19 @@ namespace BTDToolbox_Updater.Classes
         }
         public static void printToConsole(string message, Main m)
         {
-            try
-            { m.Invoke((MethodInvoker)delegate { m.Console.AppendText(">> " + message + "\r\n"); }); }
-            catch
-            { }
+            if (message != Main.lastMessage)
+            {
+                try
+                {
+                    m.Invoke((MethodInvoker)delegate {
+                        m.Console.AppendText(">> " + message + "\r\n");
+                        m.Console.ScrollToCaret();
+                        Main.lastMessage = message;
+                    });
+                }
+                catch
+                { }
+            }
         }
     }
 }
