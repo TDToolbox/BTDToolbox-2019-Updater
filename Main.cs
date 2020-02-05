@@ -45,7 +45,7 @@ namespace BTDToolbox_Updater
 
         //================================================================================
         //For easy reuse of project, change these variables
-        string filename = "BTD Toolbox";// = "BTD Toolbox";                                             //This will be used in all of the console messages
+        string filename = "";// = "BTD Toolbox";                                             //This will be used in all of the console messages
         string program_ProcessName;// = "BTDToolbox";                                   //Used to check if the program is already running. Must set this
         string exeName;// = "BTDToolbox.exe";                                           //Used to restart program after update. Do not put slashes in front of it, just name
         string updateZip_Name = "";// = "BTDToolbox_Updater.zip";                       //The name of the zip file that is created from the downloaded update
