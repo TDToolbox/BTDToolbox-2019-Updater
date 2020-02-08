@@ -94,6 +94,17 @@
   <ItemGroup>
     <None Include="Resources\toolboxUpdater img 2_bg.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Resources\NK_Leaves.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\toolboxUpdater img 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Updater Icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Updater extra 1.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

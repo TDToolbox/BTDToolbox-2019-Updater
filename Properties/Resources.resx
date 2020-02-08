@@ -118,10 +118,22 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="NK_Leaves" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\NK_Leaves.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="toolboxUpdater_img_1_bg" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\toolboxUpdater img 1_bg.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="toolboxUpdater_img_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\toolboxUpdater img 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="toolboxUpdater_img_2_bg" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\toolboxUpdater img 2_bg.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Updater_extra_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Updater extra 1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Updater_Icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Updater Icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

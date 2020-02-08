@@ -63,6 +63,16 @@ namespace BTDToolbox_Updater.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap NK_Leaves {
+            get {
+                object obj = ResourceManager.GetObject("NK_Leaves", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap toolboxUpdater_img_1_bg {
             get {
                 object obj = ResourceManager.GetObject("toolboxUpdater_img_1_bg", resourceCulture);
@@ -73,9 +83,39 @@ namespace BTDToolbox_Updater.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap toolboxUpdater_img_2 {
+            get {
+                object obj = ResourceManager.GetObject("toolboxUpdater_img_2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap toolboxUpdater_img_2_bg {
             get {
                 object obj = ResourceManager.GetObject("toolboxUpdater_img_2_bg", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Updater_extra_1 {
+            get {
+                object obj = ResourceManager.GetObject("Updater_extra_1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Updater_Icon {
+            get {
+                object obj = ResourceManager.GetObject("Updater_Icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
