@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-//using System.Windows.Forms;
 
 namespace BTDToolbox_Updater.Classes
 {
@@ -48,120 +47,18 @@ namespace BTDToolbox_Updater.Classes
                 printToConsole(ex.Message, main);
             }
         }
-
-        public static void DeleteDirectory(string path, string[] files_to_ignore, string[] folders_to_ignore)
+        public static void DeleteFiles(string exeName)
         {
-            string livePath = Environment.CurrentDirectory;
+            System.IO.DirectoryInfo di = new DirectoryInfo(Environment.CurrentDirectory);
 
-
-            //Get the names of the folders that we shouldn't delete, because they have files we shouldnt delete!
-            foreach (string ig in files_to_ignore)
-            {
-                var allFiles = Directory.GetFiles(Environment.CurrentDirectory, ig + "*", SearchOption.AllDirectories);
-                foreach (var sd in allFiles)
-                {
-                    string cleanPath = sd.ToString().Replace(livePath, "");
-                    string[] dirs = cleanPath.Split('\\');
-                    Array.Resize(ref dirs, dirs.Length - 1);    //remove the filename from the path
-
-                    foreach (string d in dirs)
-                    {
-                        if (d != "")    //We've now got the folder name
-                        {
-                            if (!folders_to_ignore.Contains(d))
-                            {
-                                Array.Resize(ref folders_to_ignore, folders_to_ignore.Length + 1);
-                                folders_to_ignore[folders_to_ignore.Length - 1] = d;
-                            }
-                        }
-                    }
-                }
-            }
-
-            //Get the names of the folders that we shouldn't delete, because they have folders we shouldnt delete!
-            string[] folders = Directory.GetDirectories(path, "*", SearchOption.AllDirectories);
-            foreach (string dir in folders)
-            {
-                foreach (string f in folders_to_ignore) //check if dir name is one of the ones we cant delete
-                {
-                    if (dir.Contains(f))
-                    {
-                        string cleanPath = dir.ToString().Replace(livePath, "");
-                        string[] dirs = cleanPath.Split('\\');
-                        foreach (string d in dirs)
-                        {
-                            if (d != "")    //We've now got the folder name
-                            {
-                                if (!folders_to_ignore.Contains(d))
-                                {
-                                    Array.Resize(ref folders_to_ignore, folders_to_ignore.Length + 1);
-                                    folders_to_ignore[folders_to_ignore.Length - 1] = d;
-                                }
-                            }
-                        }
-                    }
-                }                
-            }
-
-            //Delete shit
-            DirectoryInfo di = new DirectoryInfo(path);
             foreach (FileInfo file in di.GetFiles())
             {
-                bool skip = false;
-                foreach (string fi in files_to_ignore)
+                if(file.Name.Contains(exeName))
                 {
-                    if (file.ToString().Contains(fi))
-                    {
-                        skip = true;
-                    }
-                }
-                if (skip == false)
-                {
-                    //file.Delete();
+                    file.Delete();
+                    printToConsole("Deleted old version...", main);
                 }
             }
-            foreach (string fi in folders_to_ignore)
-            {
-                printToConsole(fi, main);
-            }
-
-            string[] folders2 = Directory.GetDirectories(path, "*", SearchOption.AllDirectories);
-            foreach (string dir in folders2)
-            {
-                //printToConsole(dir, main);
-                bool skip = false;
-                foreach (string fi in folders_to_ignore)
-                {
-                    //printToConsole(fi, main);
-                    if (dir.Contains(fi))
-                    {
-                        skip = true;
-                    }
-                }
-                if (skip == false)
-                {
-                    //printToConsole(dir, main);
-                    //dir.Delete(true);
-                }
-
-                if (!folders_to_ignore.Contains(dir.ToString()))
-                {
-                    //printToConsole(dir, main);
-                    //dir.Delete(true);
-                }
-            }
-
-            foreach (DirectoryInfo dir in di.GetDirectories())
-            {
-                
-                //printToConsole(dir.ToString(), main);
-                /*if (!folders_to_ignore.Contains(dir.ToString()))
-                {
-                    //dir.Delete(true);
-                }*/
-            }
-            printToConsole("Done deleting", main);
-
         }
         public static void CheckForExit(string[] files_to_delete_on_exit)
         {
