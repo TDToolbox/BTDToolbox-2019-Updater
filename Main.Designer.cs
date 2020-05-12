@@ -49,7 +49,7 @@
             // 
             this.Console.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
             this.Console.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.Console.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Console.Font = new System.Drawing.Font("Consolas", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Console.ForeColor = System.Drawing.Color.White;
             this.Console.Location = new System.Drawing.Point(31, 82);
             this.Console.Name = "Console";

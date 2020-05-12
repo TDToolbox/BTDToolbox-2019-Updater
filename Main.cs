@@ -88,9 +88,12 @@ namespace BTDToolbox_Updater
         private void Form1_Shown(object sender, EventArgs e)
         {
             printToConsole("Program Initialized...", this);
-            Get_Launch_Parameters();
-            if (GeneralMethods.isProcessRunning(program_ProcessName))
-                TerminateProcess(filename, program_ProcessName);
+            new Thread(() =>
+            {
+                Get_Launch_Parameters();
+                if (isProcessRunning(program_ProcessName))
+                    TerminateProcess(filename, program_ProcessName);
+            }).Start();
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -107,16 +110,16 @@ namespace BTDToolbox_Updater
         //operations
         private void Start()
         {
-            if (param_url == "" || param_url == null)
+
+            if (!Guard.IsStringValid(param_url))
             {
                 printToConsole("Vital launch parameters are missing! Missing initial git url.  Unable to continue", this);
+                return;
             }
-            else
-            {
-                printToConsole("Welcome to " + filename + " auto-updater", this);
-                DeleteFiles(exeName);
-                DownloadFiles();
-            }
+
+            printToConsole("Welcome to " + filename + " auto-updater", this);
+            DeleteFiles(exeName);
+            DownloadFiles();
         }
         
         

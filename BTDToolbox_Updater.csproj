@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Classes\Extract.cs" />
     <Compile Include="Classes\GeneralMethods.cs" />
+    <Compile Include="Classes\Guard.cs" />
     <Compile Include="Classes\WebHandler.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
