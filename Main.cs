@@ -1,17 +1,10 @@
 ﻿using BTDToolbox_Updater.Classes;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using static UpdaterInfo.LaunchParameters;
 using static BTDToolbox_Updater.Classes.GeneralMethods;
 
 namespace BTDToolbox_Updater
@@ -77,6 +70,7 @@ namespace BTDToolbox_Updater
             client = new WebClient();
             web = new WebHandler();
             main = this;
+            
 
             pictureBox2.Controls.Add(pictureBox1);
             //pictureBox2.Controls.Add(label2);

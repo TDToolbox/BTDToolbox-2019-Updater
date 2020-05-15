@@ -104,5 +104,11 @@
   <ItemGroup>
     <None Include="Resources\Updater extra 1.png" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UpdaterInfo\UpdaterInfo.csproj">
+      <Project>{8be344c5-8623-4332-942d-4c3b6a108364}</Project>
+      <Name>UpdaterInfo</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
