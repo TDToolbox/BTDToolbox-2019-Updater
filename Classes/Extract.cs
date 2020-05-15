@@ -11,8 +11,6 @@ namespace BTDToolbox_Updater.Classes
 {
     class Extract
     {
-        int filesTransfered = 0;
-        int totalFiles = 0;
         public static Main main = Main.getInstance();
 
         public void extract(string update_zip_name, string filename, string exeName, string[] files_to_delete_on_exit)
@@ -20,18 +18,19 @@ namespace BTDToolbox_Updater.Classes
             //printToConsole("Extracting update files....");
             string zipPath = Environment.CurrentDirectory + "\\" + update_zip_name;
             string extractedFilePath = Environment.CurrentDirectory;
-            ZipFile.ExtractToDirectory(zipPath, extractedFilePath);
-            /*ZipFile archive = ZipFile.OpenRead(zipPath);
-            
 
-            totalFiles = archive.Count();
-            archive.ExtractProgress += ZipExtractProgress;
-
-            foreach (ZipEntry e in archive)
+            using (ZipArchive archive = ZipFile.OpenRead(zipPath))
             {
-                e.Extract(extractedFilePath, ExtractExistingFileAction.DoNotOverwrite);
+                foreach (ZipArchiveEntry entry in archive.Entries)
+                {
+                    string destinationPath = Path.GetFullPath(Path.Combine(extractedFilePath, entry.FullName));
+                    if (File.Exists(destinationPath))
+                        File.Delete(destinationPath);
+
+                    entry.ExtractToFile(destinationPath);
+                }
             }
-            archive.Dispose();*/
+
             GeneralMethods.printToConsole("Update files successfully extracted!!!\n>> Deleting installation files...", main);
             File.Delete(zipPath);
             GeneralMethods.printToConsole("Installation files deleted. Restarting" + filename + "...", main);
@@ -40,19 +39,5 @@ namespace BTDToolbox_Updater.Classes
             Main.exit = true;
             GeneralMethods.CheckForExit(files_to_delete_on_exit);
         }
-        /*private void ZipExtractProgress(object sender, ExtractProgressEventArgs e)
-        {
-            if (e.EventType != ZipProgressEventType.Extracting_BeforeExtractEntry)
-                return;
-            try
-            {
-                main.progressBar1.Invoke(new Action(() => main.progressBar1.Value = 100 * filesTransfered / totalFiles));
-            }
-            catch (Exception ex)
-            {
-                GeneralMethods.printToConsole(ex.Message, main);
-            }
-            filesTransfered++;
-        }*/
     }
 }
