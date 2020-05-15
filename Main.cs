@@ -1,6 +1,4 @@
 ﻿using BTDToolbox_Updater.Classes;
-using Ionic.Zip;
-using Ionic.Zlib;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Ionic.Zip;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
+using System.IO.Compression;
 
 namespace BTDToolbox_Updater.Classes
 {
@@ -20,7 +20,9 @@ namespace BTDToolbox_Updater.Classes
             //printToConsole("Extracting update files....");
             string zipPath = Environment.CurrentDirectory + "\\" + update_zip_name;
             string extractedFilePath = Environment.CurrentDirectory;
-            ZipFile archive = new ZipFile(zipPath);
+            ZipFile.ExtractToDirectory(zipPath, extractedFilePath);
+            /*ZipFile archive = ZipFile.OpenRead(zipPath);
+            
 
             totalFiles = archive.Count();
             archive.ExtractProgress += ZipExtractProgress;
@@ -29,7 +31,7 @@ namespace BTDToolbox_Updater.Classes
             {
                 e.Extract(extractedFilePath, ExtractExistingFileAction.DoNotOverwrite);
             }
-            archive.Dispose();
+            archive.Dispose();*/
             GeneralMethods.printToConsole("Update files successfully extracted!!!\n>> Deleting installation files...", main);
             File.Delete(zipPath);
             GeneralMethods.printToConsole("Installation files deleted. Restarting" + filename + "...", main);
@@ -38,7 +40,7 @@ namespace BTDToolbox_Updater.Classes
             Main.exit = true;
             GeneralMethods.CheckForExit(files_to_delete_on_exit);
         }
-        private void ZipExtractProgress(object sender, ExtractProgressEventArgs e)
+        /*private void ZipExtractProgress(object sender, ExtractProgressEventArgs e)
         {
             if (e.EventType != ZipProgressEventType.Extracting_BeforeExtractEntry)
                 return;
@@ -51,6 +53,6 @@ namespace BTDToolbox_Updater.Classes
                 GeneralMethods.printToConsole(ex.Message, main);
             }
             filesTransfered++;
-        }
+        }*/
     }
 }
